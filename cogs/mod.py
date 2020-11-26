@@ -10,6 +10,12 @@ class Mod(commands.Cog):
         self.bot = bot
         if len(bot.guilds) > 0:
             self.startup()
+            muted_role = get(self.guild.roles, name="Muted")
+            member_role = get(self.guild.roles, name="Member")
+            for member in self.guild.members:
+                if muted_role in member.roles:
+                    await member.remove_roles(muted_role, reason="Bot reloaded")
+                    await member.add_roles(member_role)
     
     def startup(self):
         self.guild = self.bot.guilds[0]
@@ -74,7 +80,7 @@ class Mod(commands.Cog):
                 await ctx.send(embed=embed)
 
             else: # Invalid time
-                embed=discord.Embed(title="Jarvis:", color=0x00ff40)
+                embed=discord.Embed(title="Jarvis:", color=0xf22929)
                 embed.add_field(
                     name="Mute", 
                     value="Enter a valid amount of time.", 
@@ -86,13 +92,28 @@ class Mod(commands.Cog):
                     inline=True)
                 await ctx.send(embed=embed)
         else: # Does not have the power to mute someone
-            embed=discord.Embed(title="Jarvis:", color=0x00ff40)
+            embed=discord.Embed(title="Jarvis:", color=0xf22929)
             embed.add_field(
                 name="Mute", 
                 value="You do not have permision to do that", 
                 inline=True
                 )
             await ctx.send(embed=embed)
+    ### When something goes wrong with the mute function ###
+    @mute.error
+    async def mute_error(self, ctx, error):
+        embed=discord.Embed(title="Jarvis:", color=0xf22929)
+        embed.add_field(
+            name="Mute", 
+            value="You did something wrong", 
+            inline=False
+            )
+        embed.add_field(
+            name="Use", 
+            value="!mute [@user] [time] [reason] (you must be a mod or above to use this function)", 
+            inline=False
+            )
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Mod(bot))

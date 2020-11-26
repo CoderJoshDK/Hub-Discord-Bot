@@ -60,10 +60,11 @@ class Roles(commands.Cog):
     @commands.command()
     @has_permissions(administrator=True)
     async def react(self, ctx, emoji):
-        messages = await ctx.channel.history(limit=5).flatten()
-        message = messages[-1]
-        await message.add_reaction(emoji)
         await ctx.message.delete()
+        messages = await ctx.channel.history(limit=5).flatten()
+        message = messages[0]
+        await message.add_reaction(emoji)
+
 
 def setup(bot):
     bot.add_cog(Roles(bot))
