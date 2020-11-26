@@ -10,12 +10,6 @@ class Mod(commands.Cog):
         self.bot = bot
         if len(bot.guilds) > 0:
             self.startup()
-            muted_role = get(self.guild.roles, name="Muted")
-            member_role = get(self.guild.roles, name="Member")
-            for member in self.guild.members:
-                if muted_role in member.roles:
-                    await member.remove_roles(muted_role, reason="Bot reloaded")
-                    await member.add_roles(member_role)
     
     def startup(self):
         self.guild = self.bot.guilds[0]

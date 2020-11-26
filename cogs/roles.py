@@ -13,7 +13,7 @@ class Roles(commands.Cog):
     
     def startup(self):
         self.guild = self.bot.guilds[0]
-        self.reactionId = 781050277053988884 # Roles chat message ID
+        self.reactionId = 781536573421649921 # Roles chat message ID
         self.memberMessageId = 781196607915687986 # Rules message ID
         self.reactionToRole = {
             "AmongUs" : get(self.guild.roles, id=780967776645808150),
