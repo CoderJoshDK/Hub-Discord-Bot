@@ -21,13 +21,19 @@ class Joke(commands.Cog):
         self.startup()
 
     @commands.command()
-    async def penis(self, ctx):
+    async def penis(self, ctx, member:discord.Member=None):
         size = "=" * random.randint(0,10)
-        embed = discord.Embed(title="Jarvis", color=0xff00ff)
-        embed.add_field(
-            name="Penis Size",
-            value=f"8{size}D"
-        )
+        embed = discord.Embed(color=0xff00ff)
+        if member:
+            embed.add_field(
+                name=f"{member.name}'s Penis Size",
+                value=f"8{size}D"
+            )
+        else:
+            embed.add_field(
+                name=f"{ctx.author.name}'s Penis Size",
+                value=f"8{size}D"
+            )
         await ctx.send(embed=embed)
 
 def setup(bot):
