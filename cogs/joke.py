@@ -28,7 +28,7 @@ class Joke(commands.Cog):
             name="Penis Size",
             value=f"8{size}D"
         )
-        ctx.send(embed=embed)
+        await ctx.send(embed=embed)
 
 def setup(bot):
     bot.add_cog(Joke(bot))
