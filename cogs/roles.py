@@ -57,6 +57,7 @@ class Roles(commands.Cog):
             await member.send(f"All of your roles on {self.guild.name} have been removed. Agree to the rules to be able to interact with the server")
             await member.send("After accepting the rules, unselect and reselect the roles you want to have")
 
+    ### Have bot add reaction to the above message ###
     @commands.command()
     @has_permissions(administrator=True)
     async def react(self, ctx, emoji):

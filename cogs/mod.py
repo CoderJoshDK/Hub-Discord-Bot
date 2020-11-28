@@ -13,6 +13,7 @@ class Mod(commands.Cog):
     
     def startup(self):
         self.guild = self.bot.guilds[0]
+        self.reportRoom = get(self.guild.channels, id=782084427022991451)
 
     ### Set up the roles####
     @commands.Cog.listener()
@@ -93,6 +94,7 @@ class Mod(commands.Cog):
                 inline=True
                 )
             await ctx.send(embed=embed)
+    
     ### When something goes wrong with the mute function ###
     @mute.error
     async def mute_error(self, ctx, error):
@@ -109,5 +111,42 @@ class Mod(commands.Cog):
             )
         await ctx.send(embed=embed)
 
+    ### Unmute a member if they served long enough ###
+    @commands.command()
+    async def unmute(self, ctx, member:discord.Member):
+        if ctx.author.top_role >= get(self.guild.roles, name="Mod"):
+            muted_role = get(ctx.guild.roles, name="Muted")
+            member_role = get(ctx.guild.roles, name="Member")
+
+            await member.remove_roles(muted_role, reason="Bot reloaded")
+            await member.add_roles(member_role)
+            
+            embed = discord.Embed(color=discord.Color.dark_green)
+            embed.add_field(
+                name="Unmute",
+                value=f"{member.name} has been unmuted"
+            )
+        else:
+            embed = discord.Embed(color=discord.Color.dark_red)
+            embed.add_field(
+                name="Unmute",
+                value="You do not have permision to do that"
+            )
+
+        await ctx.send(embed=embed)
+
+    ### Report a users for doing something bad ###
+    @commands.command()
+    async def report(self, ctx, member:discord.Member, *, reason):
+        await self.reportRoom.send(f"<@!{ctx.author.id}> has reported <@!{member.id}> because of {reason}")
+        await ctx.author.send("Thank you for reporting. We will look into it and press action if needed")
+        await ctx.message.delete()
+    
+    ### If they report wrong ###
+    @report.error
+    async def report_error(self, ctx, error):
+        await ctx.author.send("You have tried to report a user but did something wrong. To use correctly, type [!report @user they did something bad]. We will look into it and get back to you")
+        await ctx.message.delete()
+        
 def setup(bot):
     bot.add_cog(Mod(bot))

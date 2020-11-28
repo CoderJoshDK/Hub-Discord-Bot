@@ -19,6 +19,7 @@ class Stats(commands.Cog):
     async def on_ready(self):
         self.startup()
 
+    ### Show the number of members in the server ###
     @commands.command()
     async def members(self, ctx):
         embed=discord.Embed(title="Jarvis:", color=0x63d0f7)
@@ -29,12 +30,14 @@ class Stats(commands.Cog):
         )
         await ctx.send(embed=embed)
     
+    ### Show server who left the server ###
     @commands.Cog.listener()
     async def on_member_remove(self, member):
         for channel in self.guild.channels:
             if channel.id == 781581365513945121:
                 await channel.send(f'<@!{member.id}> has left the server.')
 
+    ### Message new members so they don't get conffused ###
     @commands.Cog.listener()
     async def on_member_join(self, member):
         await member.send(f"Hi, welcome to {self.guild.name}! Please read the rules and agree to them. To agree react with 👍. Some parts of the server you need roles to access. Don't worry, you can get them by reacting to the message under the rules!")
