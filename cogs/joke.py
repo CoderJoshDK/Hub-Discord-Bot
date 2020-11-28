@@ -24,21 +24,21 @@ class Joke(commands.Cog):
     @commands.command()
     async def penis(self, ctx, member:discord.Member=None):
         if (ctx.author.id == 674112794664108053 and member == None) or (member and member.id == 674112794664108053):
-            size = "~" * random.randint(6,10)
+            size = "~" * random.randint(10,25)
         elif (ctx.author.id == 471472854546776095 and member == None) or (member and member.id == 471472854546776095):
             size = "=" * 10
         else:
             size = "=" * random.randint(0,10)
-            
+
         embed = discord.Embed(color=0xff00ff)
         if member:
             embed.add_field(
-                name=f"{member.name}'s Penis Size",
+                name=f"{member.display_name}'s Penis Size",
                 value=f"8{size}D"
             )
         else:
             embed.add_field(
-                name=f"{ctx.author.name}'s Penis Size",
+                name=f"{ctx.author.display_name}'s Penis Size",
                 value=f"8{size}D"
             )
         await ctx.send(embed=embed)

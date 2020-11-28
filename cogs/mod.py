@@ -48,7 +48,7 @@ class Mod(commands.Cog):
                 embed=discord.Embed(title="Jarvis:", color=0x00ff40)
                 embed.add_field(
                     name="Mute", 
-                    value=f"{member.name} has been muted for {time} because of {reason} by {ctx.author.name}", 
+                    value=f"{member.display_name} has been muted for {time} because of {reason} by {ctx.author.display_name}", 
                     inline=True
                 )
                 await ctx.send(embed=embed)
@@ -58,6 +58,10 @@ class Mod(commands.Cog):
                 member_role = get(ctx.guild.roles, name="Member")
 
                 await member.add_roles(muted_role, reason=reason) # Make them muted
+                try:
+                    await member.move_to(None)
+                except:
+                    pass
                 await member.remove_roles(member_role) # Member roles can type so get rid of it
 
                 await asyncio.sleep(seconds)
@@ -69,7 +73,7 @@ class Mod(commands.Cog):
                 embed=discord.Embed(title="Jarvis:", color=0x00ff40)
                 embed.add_field(
                     name="Unmuted", 
-                    value=f"{member.name} has been unmuted. {time} has past", 
+                    value=f"{member.display_name} has been unmuted. {time} has past", 
                     inline=True
                 )
                 await ctx.send(embed=embed)
@@ -118,13 +122,13 @@ class Mod(commands.Cog):
             muted_role = get(ctx.guild.roles, name="Muted")
             member_role = get(ctx.guild.roles, name="Member")
 
-            await member.remove_roles(muted_role, reason="Bot reloaded")
+            await member.remove_roles(muted_role, reason="They have been unmuted")
             await member.add_roles(member_role)
             
             embed = discord.Embed(color=discord.Color.dark_green)
             embed.add_field(
                 name="Unmute",
-                value=f"{member.name} has been unmuted"
+                value=f"{member.display_name} has been unmuted"
             )
         else:
             embed = discord.Embed(color=discord.Color.dark_red)
