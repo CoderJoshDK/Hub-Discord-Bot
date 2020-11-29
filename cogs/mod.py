@@ -150,6 +150,7 @@ class Mod(commands.Cog):
     @report.error
     async def report_error(self, ctx, error):
         await ctx.author.send("You have tried to report a user but did something wrong. To use correctly, type [!report @user they did something bad]. We will look into it and get back to you")
+        await self.reportRoom.send(f"<@!{ctx.author.id}> has tried to use the report function but failed. They typed: {ctx.message}")
         await ctx.message.delete()
         
 def setup(bot):
