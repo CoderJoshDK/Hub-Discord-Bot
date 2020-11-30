@@ -27,6 +27,8 @@ class Joke(commands.Cog):
             size = "~" * random.randint(10,25)
         elif (ctx.author.id == 471472854546776095 and member == None) or (member and member.id == 471472854546776095):
             size = "=" * 10
+        elif (ctx.author.id == 472218215083278347 and member == None) or (member and member.id == 472218215083278347):
+            size = "E" * random.randint(0,10)
         else:
             size = "=" * random.randint(0,10)
 
