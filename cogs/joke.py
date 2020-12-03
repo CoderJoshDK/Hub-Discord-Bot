@@ -1,4 +1,4 @@
-import discord
+import discord, asyncio
 from discord.ext import commands
 from discord.ext.commands import has_permissions
 from discord.utils import get
@@ -53,6 +53,14 @@ class Joke(commands.Cog):
             name="You used this function wrong",
             value="Either just do !penis for your own size or !penis @user for some other members size"
         )
+
+    ### Randomly messes with people when they are typing ###
+    # @commands.Cog.listener()
+    # async def on_typing(self, channel, user, when):
+    #     if random.randint(0,10000) < 4:
+    #         message = await channel.send(f"")
+    #         await asyncio.sleep(4)
+    #         await message.delete()
 
 def setup(bot):
     bot.add_cog(Joke(bot))

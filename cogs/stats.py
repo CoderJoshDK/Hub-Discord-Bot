@@ -35,7 +35,7 @@ class Stats(commands.Cog):
     async def on_member_remove(self, member):
         for channel in self.guild.channels:
             if channel.id == 781581365513945121:
-                await channel.send(f'<@!{member.id}> has left the server.')
+                await channel.send(f'{member.name} has left the server. <@!{member.id}>')
 
     ### Message new members so they don't get conffused ###
     @commands.Cog.listener()

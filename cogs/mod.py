@@ -14,6 +14,7 @@ class Mod(commands.Cog):
     def startup(self):
         self.guild = self.bot.guilds[0]
         self.reportRoom = get(self.guild.channels, id=782084427022991451)
+        self.logRoom = get(self.guild.channels, id=780993363146178580)
 
     ### Set up the roles####
     @commands.Cog.listener()
@@ -63,6 +64,7 @@ class Mod(commands.Cog):
                 except:
                     pass
                 await member.remove_roles(member_role) # Member roles can type so get rid of it
+                await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} fro {time}") # Log the mute
 
                 await asyncio.sleep(seconds)
 
