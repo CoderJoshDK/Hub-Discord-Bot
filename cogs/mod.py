@@ -32,7 +32,21 @@ class Mod(commands.Cog):
 
     ### Make sure only admin or mods can use this cog ###
     async def cog_check(self, ctx):
-        return self.mod in ctx.author.roles or self.admin in ctx.author.roles
+        return ctx.author.top_role >= self.mod
+
+    ### Deal with diffrent errors ###
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx, error):
+        if hasattr(ctx.command, 'on_error'):
+            pass
+        ignored = (commands.CommandNotFound, )
+        error = getattr(error, 'original', error)
+        if isinstance(error, ignored):
+            return
+        elif isinstance(error, commands.CheckFailure):
+            await ctx.send("You do not have permision to do that")
+            return
+
 
     ### When someon types a message ###
     async def on_message(self, message):
