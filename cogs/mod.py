@@ -50,6 +50,7 @@ class Mod(commands.Cog):
 
     ### When someon types a message ###
     async def on_message(self, message):
+        print("made it here")
         if message.author == self.bot.user:
             return
 
@@ -162,7 +163,7 @@ class Mod(commands.Cog):
     async def clear(self, ctx, amount=10):
         filename = f"{ctx.channel.name}_clear.txt" # Make text file
         with open(filename, "w") as file:
-            file.write(f"{ctx.author} cleared {amount} messages in {ctx.channel.name}\n") # Log action
+            file.write(f"{ctx.author} cleared {amount} messages in {ctx.channel.name}\n\n") # Log action
             async for msg in ctx.channel.history(limit=amount): # Go through channels messages
                 file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
         await ctx.channel.purge(limit=amount) # Delete messages
