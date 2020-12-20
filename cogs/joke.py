@@ -23,10 +23,8 @@ class Joke(commands.Cog):
     ### Shows the member their randomly sized penis ###
     @commands.command()
     async def penis(self, ctx, member:discord.Member=None):
-        if (ctx.author.id == 674112794664108053 and member == None) or (member and member.id == 674112794664108053):
-            size = "~" * random.randint(10,25)
-        elif (ctx.author.id == 471472854546776095 and member == None) or (member and member.id == 471472854546776095):
-            size = "=" * 10
+        if (ctx.author.id == 471472854546776095 and member == None) or (member and member.id == 471472854546776095):
+            size = "=" * random.randint(10, 12)
         elif (ctx.author.id == 472218215083278347 and member == None) or (member and member.id == 472218215083278347):
             size = "E" * random.randint(0,10)
         else:
@@ -53,6 +51,7 @@ class Joke(commands.Cog):
             name="You used this function wrong",
             value="Either just do !penis for your own size or !penis @user for some other members size"
         )
+        await ctx.send(embed=embed)
 
     ### Randomly messes with people when they are typing ###
     # @commands.Cog.listener()

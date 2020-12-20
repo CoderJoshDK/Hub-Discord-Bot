@@ -13,6 +13,7 @@ class Stats(commands.Cog):
     
     def startup(self):
         self.guild = self.bot.guilds[0]
+        self.reportRoom = get(self.guild.channels, id=782084427022991451)
 
     ### Set up the roles ###
     @commands.Cog.listener()
@@ -29,6 +30,20 @@ class Stats(commands.Cog):
             inline=True
         )
         await ctx.send(embed=embed)
+
+    ### Report a users for doing something bad ###
+    @commands.command()
+    async def report(self, ctx, member:discord.Member, *, reason):
+        await self.reportRoom.send(f"<@!{ctx.author.id}> has reported <@!{member.id}> because of {reason}")
+        await ctx.author.send("Thank you for reporting. We will look into it and press action if needed")
+        await ctx.message.delete()
+    
+    ### If they report wrong ###
+    @report.error
+    async def report_error(self, ctx, error):
+        await ctx.author.send("You have tried to report a user but did something wrong. To use correctly, type `!report @user they did something bad`. We will look into it and get back to you")
+        await self.reportRoom.send(f"<@!{ctx.author.id}> has tried to use the report function but failed. They typed: {ctx.message.content}")
+        await ctx.message.delete()
     
     ### Show server who left the server ###
     @commands.Cog.listener()
