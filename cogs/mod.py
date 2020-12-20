@@ -44,6 +44,7 @@ class Mod(commands.Cog):
         if isinstance(error, ignored):
             return
         elif isinstance(error, commands.CheckFailure):
+            await ctx.channel.purge(limit=1)
             await ctx.send("You do not have permision to do that")
             return
 
@@ -177,11 +178,11 @@ class Mod(commands.Cog):
         def is_m(m): # Checks if messages author is the member being purged
             return m.author == member and m.author != self.bot.user
 
-        with open(filename, "w") as file:
-            file.write(f"{ctx.author} cleared {amount} messages of {member.display_name} in {ctx.channel.name}\n\n\n") # Log action
+        with open(filename, "w", encoding="UTF-8") as file:
+            file.write(f"{ctx.author} cleared {amount} messages of {member.display_name} in {ctx.channel.name}\n\n") # Log action
             
-            for channel in self.guild.channels: # Go through all channels of guild
-                file.write(f"Messages from {channel.name}:\n\n") # Break up the logs by channel
+            for channel in self.guild.text_channels: # Go through all text channels of guild
+                file.write(f"\nMessages from {channel.name}:\n") # Break up the logs by channel
                 async for msg in channel.history(limit=amount): # Go through channel's messages
                     if msg.author == member:
                         file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
