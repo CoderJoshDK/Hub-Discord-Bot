@@ -49,8 +49,8 @@ class Mod(commands.Cog):
 
 
     ### When someon types a message ###
+    @commands.Cog.listener()
     async def on_message(self, message):
-        print("made it here")
         if message.author == self.bot.user:
             return
 
