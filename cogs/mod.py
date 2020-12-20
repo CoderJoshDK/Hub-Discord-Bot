@@ -182,7 +182,7 @@ class Mod(commands.Cog):
             file.write(f"{ctx.author} cleared {amount} messages of {member.display_name} in {ctx.channel.name}\n\n") # Log action
             
             for channel in self.guild.text_channels: # Go through all text channels of guild
-                file.write(f"\nMessages from {channel.name}:\n") # Break up the logs by channel
+                file.write(f"\nMessages from {channel.name} in {channel.category.name}:\n") # Break up the logs by channel
                 async for msg in channel.history(limit=amount): # Go through channel's messages
                     if msg.author == member:
                         file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
