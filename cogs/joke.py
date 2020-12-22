@@ -12,14 +12,17 @@ class Joke(commands.Cog):
         if len(bot.guilds) > 0:
             self.startup()
     
+    
     def startup(self):
         self.guild = self.bot.guilds[0]
 
+    
     ### Set up the roles ###
     @commands.Cog.listener()
     async def on_ready(self):
         self.startup()
 
+    
     ### Shows the member their randomly sized penis ###
     @commands.command()
     async def penis(self, ctx, member:discord.Member=None):
@@ -41,8 +44,7 @@ class Joke(commands.Cog):
                 name=f"{ctx.author.display_name}'s Penis Size",
                 value=f"8{size}D"
             )
-        await ctx.send(embed=embed)
-    
+        await ctx.send(embed=embed)    
     ### Penis error handaling ###
     @penis.error
     async def penis_error(self, ctx, error):
