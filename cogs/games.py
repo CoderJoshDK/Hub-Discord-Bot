@@ -14,6 +14,8 @@ class Games(commands.Cog):
     
     def startup(self):
         self.guild = self.bot.guilds[0]
+        self.red = 0x992d22
+        self.purple = 0x9b59b6
 
     
     ### Set up ###
@@ -27,7 +29,7 @@ class Games(commands.Cog):
     async def dice(self, ctx):
         number = random.randint(1,6)
         
-        embed = discord.Embed(color=discord.Color.purple)
+        embed = discord.Embed(color=self.purple)
         embed.add_field(
                 name="Dice",
                 value=f"You rolled a {number}"
@@ -36,7 +38,7 @@ class Games(commands.Cog):
     ### Error Handling ###
     @dice.error
     async def dice_error(self, ctx, error):
-        embed = discord.Embed(color=discord.Color.dark_red)
+        embed = discord.Embed(color=self.red)
         embed.add_field(
                 name="Dice",
                 value=f"How did you mess this up? Just type ONLY !dice"
@@ -49,7 +51,7 @@ class Games(commands.Cog):
     async def coin(self, ctx):
         flip = random.randint(0,1)
         
-        embed = discord.Embed(color=discord.Color.purple)
+        embed = discord.Embed(color=self.purple)
         if flip:
             embed.add_field(
                 name="Coin",
@@ -64,7 +66,7 @@ class Games(commands.Cog):
     ### Error Handling ###
     @coin.error
     async def coin_error(self, ctx, error):
-        embed = discord.Embed(color=discord.Color.dark_red)
+        embed = discord.Embed(color=self.red)
         embed.add_field(
                 name="Coin",
                 value=f"How did you mess this up? Just type ONLY !coin"
