@@ -72,6 +72,14 @@ class Games(commands.Cog):
                 value=f"How did you mess this up? Just type ONLY !coin"
             )
         await ctx.send(embed=embed)
+
+    ### Does a poll to see what map to play ###
+    @commands.command()
+    async def map(self, ctx):
+        msg = await ctx.send("What map would you guys like to play? React to this message to vote!")
+        emojis = [get(ctx.guild.emojis, name="Skeld"), get(ctx.guild.emojis, name="Mira"), get(ctx.guild.emojis, name="Polus")]
+        for emoji in emojis:
+            await msg.add_reaction(emoji)
     
 
 def setup(bot):

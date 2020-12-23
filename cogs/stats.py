@@ -60,7 +60,7 @@ class Stats(commands.Cog):
     ### Message new members so they don't get conffused ###
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        await member.send(f"Hi, welcome to {self.guild.name}! Please read the rules and agree to them. To agree react with 👍. Some parts of the server you need roles to access. Don't worry, you can get them by reacting to the message under the rules!")
+        await member.send(f"Hi, welcome to {self.guild.name}! Please read the rules and agree to them. Some parts of the server you need roles to access. Don't worry, you can get them by reacting to the message under the rules!")
 
 def setup(bot):
     bot.add_cog(Stats(bot))
