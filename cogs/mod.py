@@ -196,7 +196,13 @@ class Mod(commands.Cog):
             value=f"To use the clear command, type !clear [amount]\nThere was an error somewhere."
         )
         await ctx.send(embed=embed) # Post the embed
-        await self.hiddenLogRoom.send(f"An error on the clear command\n{error}") # Log what the error was
+
+        embed = discord.Embed(color=0xe74c3c, title="Error") 
+        embed.add_field(
+            name="Clear",
+            value=f"An error on the clear command\n{error}"
+        )
+        await self.hiddenLogRoom.send(embed=embed) # Log what the error was
     
     
     ### Clear a channel's messages by some amount for some user ###
@@ -228,7 +234,13 @@ class Mod(commands.Cog):
             value=f"To use the purge command, type !purge <member> [amount]\nThere was an error somewhere. It has been logged and will be looked into"
         )
         await ctx.send(embed=embed) # Post the embed
-        await self.hiddenLogRoom.send(f"An error on the purge command\n{error}") # Log what the error was
+        
+        embed = discord.Embed(color=0xe74c3c, title="Error") 
+        embed.add_field(
+            name="Purge",
+            value=f"An error on the purge command\n{error}"
+        )
+        await self.hiddenLogRoom.send(embed=embed) # Log what the error was
 
 
 
