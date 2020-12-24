@@ -161,13 +161,13 @@ class Mod(commands.Cog):
             self.mutedMembers.remove(member) # Removes them from the muted list
             await member.edit(mute=False, deafen=False) # Un server mute and deafen
         except: # If they are not in the muted list, let them know
-            embed = discord.Embed(color=discord.Color.red) 
+            embed = discord.Embed(color=0xe74c3c) 
             embed.add_field(
                 name="Unmute",
                 value=f"{member.display_name} was not muted"
             )
         else: # If they are in the muted list say it has finished
-            embed = discord.Embed(color=discord.Color.dark_green) 
+            embed = discord.Embed(color=0x1f8b4c) 
             embed.add_field(
                 name="Unmute",
                 value=f"{member.display_name} has been unmuted"
@@ -180,11 +180,23 @@ class Mod(commands.Cog):
     async def clear(self, ctx, amount=10):
         filename = f"{ctx.channel.name}_clear.txt" # Make text file
         with open(filename, "w") as file:
-            file.write(f"{ctx.author} cleared {amount} messages in {ctx.channel.name}\n\n") # Log action
+            file.write(f"{ctx.author} cleared {amount} messages of {ctx.channel.name} in {ctx.channel.category.name}\n\n") # Log action
             async for msg in ctx.channel.history(limit=amount): # Go through channels messages
-                file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
+                try:
+                    file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
+                except:
+                    file.write(f"{msg.created_at} - {msg.author.display_name}: Message could not be displayed\n")
         await ctx.channel.purge(limit=amount) # Delete messages
         await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
+    @clear.error
+    async def clear_error(self, ctx, error):
+        embed = discord.Embed(color=0xe74c3c, title="Error") 
+        embed.add_field(
+            name="Clear",
+            value=f"To use the clear command, type !clear [amount]\nThere was an error somewhere."
+        )
+        await ctx.send(embed=embed) # Post the embed
+        await self.hiddenLogRoom.send(f"An error on the clear command\n{error}") # Log what the error was
     
     
     ### Clear a channel's messages by some amount for some user ###
@@ -202,10 +214,21 @@ class Mod(commands.Cog):
                 file.write(f"\nMessages from {channel.name} in {channel.category.name}:\n") # Break up the logs by channel
                 async for msg in channel.history(limit=amount): # Go through channel's messages
                     if msg.author == member:
-                        file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
+                        try:
+                            file.write(f"{msg.created_at} - {msg.author.display_name}: {msg.clean_content}\n") # Log the deleted text
+                        except:
+                            file.write(f"{msg.created_at} - {msg.author.display_name}: Message could not be displayed\n")
                 await channel.purge(limit=amount, check=is_m) # Delete messages of member
         await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
-
+    @purge.error
+    async def purge_error(self, ctx, error):
+        embed = discord.Embed(color=0xe74c3c, title="Error") 
+        embed.add_field(
+            name="Purge",
+            value=f"To use the purge command, type !purge <member> [amount]\nThere was an error somewhere. It has been logged and will be looked into"
+        )
+        await ctx.send(embed=embed) # Post the embed
+        await self.hiddenLogRoom.send(f"An error on the purge command\n{error}") # Log what the error was
 
 
 
