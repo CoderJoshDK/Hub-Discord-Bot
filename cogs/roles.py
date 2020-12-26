@@ -17,7 +17,8 @@ class Roles(commands.Cog):
         self.reactionId = 781536573421649921 # Roles chat message ID
         self.reactionToRole = {
             "AmongUs" : get(self.guild.roles, name="Among Us"),
-            "Groovy" : get(self.guild.roles, name="DJ")
+            "Groovy" : get(self.guild.roles, name="DJ"),
+            "Minecraft" : get(self.guild.roles, name="Minecraft")
         }
 
     
