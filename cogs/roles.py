@@ -14,11 +14,13 @@ class Roles(commands.Cog):
     
     def startup(self):
         self.guild = self.bot.guilds[0]
-        self.reactionId = 781536573421649921 # Roles chat message ID
+        self.reactionId = 798999998317723709 # Roles chat message ID
         self.reactionToRole = {
             "AmongUs" : get(self.guild.roles, name="Among Us"),
             "Groovy" : get(self.guild.roles, name="DJ"),
-            "Minecraft" : get(self.guild.roles, name="Minecraft")
+            "Minecraft" : get(self.guild.roles, name="Minecraft"),
+            "ThinkPad" : get(self.guild.roles, name="Haker Man"),
+            "Cards" : get(self.guild.roles, name="Cards")
         }
 
     
