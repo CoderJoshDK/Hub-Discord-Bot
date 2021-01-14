@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 from discord.ext.commands import has_permissions
 from discord.utils import get
+from emoji import EMOJI_ALIAS_UNICODE as EMOJIS
 
 class Stats(commands.Cog):
 
@@ -47,7 +48,45 @@ class Stats(commands.Cog):
         await ctx.author.send("You have tried to report a user but did something wrong. To use correctly, type `!report @user they did something bad`. We will look into it and get back to you")
         await self.reportRoom.send(f"<@!{ctx.author.id}> has tried to use the report function but failed. They typed: {ctx.message.content}")
         await ctx.message.delete()
-    
+
+
+    ### Make a poll ###
+    @commands.command()
+    async def poll(self, ctx, question, *args):
+        # Dict of number emojis
+        emojis = {
+            1:EMOJIS[':one:'], 
+            2:EMOJIS[':two:'], 
+            3:EMOJIS[':three:'], 
+            4:EMOJIS[':four:'], 
+            5:EMOJIS[':five:'],
+            6:EMOJIS[':six:'],
+            7:EMOJIS[':seven:'],
+            8:EMOJIS[':eight:'],
+            9:EMOJIS[':nine:']
+            }
+
+        await ctx.message.delete() # Delete the original msg
+
+        embed = discord.Embed(title="Jarvis", color=0x9b59b6)
+        embed.add_field(
+            name="Poll", 
+            value=question, 
+            inline=True
+        )
+        # Post all the options
+        for i, arg in enumerate(args):
+            embed.add_field(
+                name=f"Option {emojis[i+1]}",
+                value=arg,
+                inline=False
+            )
+        # Send the message
+        msg = await ctx.send(embed=embed)
+        # Add reactions so people could vote
+        for i in range(len(args)):
+            await msg.add_reaction(emojis[i+1])
+        
     
     ### Show server who left the server ###
     @commands.Cog.listener()
