@@ -96,7 +96,6 @@ class Mod(commands.Cog):
             
             ### Mute them and then unmute them after time ###
             muted_role = get(ctx.guild.roles, name="Muted")
-            member_role = get(ctx.guild.roles, name="Member")
 
             await member.add_roles(muted_role, reason=reason) # Make them muted
             self.mutedMembers.append(member) # Put them on the muted list
@@ -105,7 +104,6 @@ class Mod(commands.Cog):
                 await member.edit(mute=True, deafen=True, voice_channel=None) # Take them out of voice chat if they are in one and mute and deafen them
             except:
                 pass
-            await member.remove_roles(member_role) # Member roles can type so get rid of it
             await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} for {time}") # Log the mute
 
             await asyncio.sleep(seconds) # Wait for time to pass
@@ -115,7 +113,6 @@ class Mod(commands.Cog):
 
             if self.guild.get_member(member.id) != None: # Can only do these things if member is still in guild or you get error
                 await member.remove_roles(muted_role, reason="Time is up") # Get rid of muted role
-                await member.add_roles(member_role) # Make them a member again
             
             # Unmute embed
             embed=discord.Embed(
@@ -164,6 +161,18 @@ class Mod(commands.Cog):
             icon_url=self.bot.user.avatar_url
         )
         await ctx.send(embed=embed)
+        
+        # Log the error #
+        embed = discord.Embed(
+            color=0xe74c3c, 
+            title="Mute Error",
+            description=f"An error on the mute command\n{error}"
+            ) 
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
+        await self.hiddenLogRoom.send(embed=embed)
 
     
     ### Unmute a member if they served long enough ###
@@ -173,10 +182,8 @@ class Mod(commands.Cog):
         Unmute a user. They can interact with the server again
         """
         muted_role = get(ctx.guild.roles, name="Muted")
-        member_role = get(ctx.guild.roles, name="Member")
 
-        await member.remove_roles(muted_role, reason="They have been unmuted")
-        await member.add_roles(member_role)        
+        await member.remove_roles(muted_role, reason="They have been unmuted")     
         try:
             self.mutedMembers.remove(member) # Removes them from the muted list
             await member.edit(mute=False, deafen=False) # Un server mute and deafen
