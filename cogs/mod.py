@@ -101,8 +101,9 @@ class Mod(commands.Cog):
             self.mutedMembers.append(member) # Put them on the muted list
 
             try:
-                await member.edit(mute=True, deafen=True, voice_channel=None) # Take them out of voice chat if they are in one and mute and deafen them
-            except:
+                await member.edit(mute=True, deafen=True) # Mute and deafen them
+                await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
+            except discord.HTTPException:
                 pass
             await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} for {time}") # Log the mute
 
