@@ -16,6 +16,8 @@ bot = commands.Bot(command_prefix = '!', intents=intents, case_insensitive=True)
 bot.config_token = secret_file['token']
 logging.basicConfig(level=logging.INFO)
 
+bot.version = "0.0.3"
+
 ######## Start of Bot ################
 
 @bot.event

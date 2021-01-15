@@ -26,11 +26,9 @@ class Mod(commands.Cog):
     async def on_ready(self):
         self.startup()
         muted_role = get(self.guild.roles, name="Muted")
-        member_role = get(self.guild.roles, name="Member")
         for member in self.guild.members:
             if muted_role in member.roles:
                 await member.remove_roles(muted_role, reason="Bot reloaded")
-                await member.add_roles(member_role)
 
     
     ### Make sure only admin or mods can use this cog ###
@@ -100,12 +98,11 @@ class Mod(commands.Cog):
             await member.add_roles(muted_role, reason=reason) # Make them muted
             self.mutedMembers.append(member) # Put them on the muted list
 
-            try:
-                await member.edit(mute=True, deafen=True) # Mute and deafen them
-                if member.voice:
-                    await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
-            except:
-                pass
+            await member.edit(mute=True, deafen=True) # Mute and deafen them
+            print("Muted")
+            if member.voice:
+                await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
+            print("Got past the moving from VC")
             await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} for {time}") # Log the mute
 
             await asyncio.sleep(seconds) # Wait for time to pass
@@ -147,16 +144,10 @@ class Mod(commands.Cog):
     ### When something goes wrong with the mute function ###
     @mute.error
     async def mute_error(self, ctx, error):
-        embed=discord.Embed(title="Mute", color=0xf22929)
-        embed.add_field(
-            name="Mute", 
-            value="You did something wrong", 
-            inline=False
-        )
-        embed.add_field(
-            name="Usage", 
-            value="!mute [@user] [time] [reason] (you must be a mod or above to use this function)", 
-            inline=False
+        embed=discord.Embed(
+            title="Mute Error", 
+            color=0xf22929,
+            description=f"Something went wrong. It has been logged and will be looked into.\nIf the user should be unmuted do it with !unmute"
         )
         embed.set_author(
             name=self.bot.user.name,
