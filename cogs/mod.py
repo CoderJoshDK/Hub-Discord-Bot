@@ -98,17 +98,13 @@ class Mod(commands.Cog):
             await member.add_roles(muted_role, reason=reason) # Make them muted
             self.mutedMembers.append(member) # Put them on the muted list
 
-            await member.edit(mute=True, deafen=True) # Mute and deafen them
-            print("Muted")
             if member.voice:
                 await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
-            print("Got past the moving from VC")
             await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} for {time}") # Log the mute
 
             await asyncio.sleep(seconds) # Wait for time to pass
 
             self.mutedMembers.remove(member) # Take them off the muted list
-            await member.edit(mute=False, deafen=False) # Un server mute and deafen
 
             if self.guild.get_member(member.id) != None: # Can only do these things if member is still in guild or you get error
                 await member.remove_roles(muted_role, reason="Time is up") # Get rid of muted role
