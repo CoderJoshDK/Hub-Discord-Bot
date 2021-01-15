@@ -1,17 +1,27 @@
 import discord
 import os
+from pathlib import Path
 from discord.ext import commands
 from discord.ext.commands import has_permissions
 
-TOKEN = "NzgxMDAyNjMxODYyMDI2MjQw.X73TYQ.js7y7wheQwoIh-ZHPifVkXOxRaI"
+import logging
+import json
+
+cwd = Path(__file__).parents[0]
+cwd = str(cwd)
+secret_file = json.load(open(cwd+"/Config/secrets.json"))
+
 intents = discord.Intents.all()
-bot = commands.Bot(command_prefix = '!', intents=intents)
+bot = commands.Bot(command_prefix = '!', intents=intents, case_insensitive=True)
+bot.config_token = secret_file['token']
+logging.basicConfig(level=logging.INFO)
 
 ######## Start of Bot ################
 
 @bot.event
 async def on_ready():
     print(f"{bot.user.name} is online")
+    await bot.change_presence(activity=discord.Game(f"Hi, I am {bot.user.name}.\nUse ! to interact with me."))
 
 ######## Load and unload Cogs ########
 '''
@@ -49,4 +59,4 @@ for filename in os.listdir('./cogs'):
         bot.load_extension(f'cogs.{filename[:-3]}')
 
 
-bot.run(TOKEN)
+bot.run(bot.config_token)

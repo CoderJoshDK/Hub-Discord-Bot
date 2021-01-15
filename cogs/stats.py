@@ -27,21 +27,27 @@ class Stats(commands.Cog):
     ### Show the number of members in the server ###
     @commands.command()
     async def members(self, ctx):
-        embed=discord.Embed(title="Jarvis:", color=0x63d0f7)
-        embed.add_field(
-            name="Amount of members", 
-            value=f"There are curently {len(self.guild.members)} members in the server", 
-            inline=True
-        )
+        """
+        Display the amount of members in the server
+        """
+        embed=discord.Embed(
+            title="Members", 
+            description=f"There are curently {len(ctx.guild.members)} members in the server", 
+            color=0x63d0f7
+            )
+        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
         await ctx.send(embed=embed)
 
     
     ### Report a users for doing something bad ###
     @commands.command()
     async def report(self, ctx, member:discord.Member, *, reason):
+        """
+        Send an anonymous report of a user. The staff will be able to see it
+        """
         await self.reportRoom.send(f"<@!{ctx.author.id}> has reported <@!{member.id}> because of {reason}")
-        await ctx.author.send("Thank you for reporting. We will look into it and press action if needed")
         await ctx.message.delete()
+        await ctx.author.send("Thank you for reporting. We will look into it and press action if needed")
     ### If they report wrong ###
     @report.error
     async def report_error(self, ctx, error):
@@ -53,6 +59,9 @@ class Stats(commands.Cog):
     ### Make a poll ###
     @commands.command()
     async def poll(self, ctx, question, *args):
+        """
+        Find out what people prefer on a topic
+        """
         # Dict of number emojis
         emojis = {
             1:EMOJIS[':one:'], 
@@ -64,16 +73,20 @@ class Stats(commands.Cog):
             7:EMOJIS[':seven:'],
             8:EMOJIS[':eight:'],
             9:EMOJIS[':nine:']
-            }
+        }
 
         await ctx.message.delete() # Delete the original msg
 
-        embed = discord.Embed(title="Jarvis", color=0x9b59b6)
-        embed.add_field(
-            name="Poll", 
-            value=question, 
-            inline=True
+        embed = discord.Embed(
+            title="Poll", 
+            description=question, 
+            color=0x9b59b6
         )
+        embed.set_author(
+            name=self.bot.user.name, 
+            icon_url=self.bot.user.avatar_url
+        )
+        
         # Post all the options
         for i, arg in enumerate(args):
             embed.add_field(
@@ -96,10 +109,10 @@ class Stats(commands.Cog):
                 await channel.send(f'{member.name} has left the server. <@!{member.id}>')
 
     
-    ### Message new members so they don't get conffused ###
+    ### Message new members so they don't get confused ###
     @commands.Cog.listener()
     async def on_member_join(self, member):
-        await member.send(f"Hi, welcome to {self.guild.name}! Please read the rules and agree to them. Some parts of the server you need roles to access. Don't worry, you can get them by reacting to the message under the rules!")
+        await member.send(f"Hi, welcome to {self.guild.name}! Please read the rules and agree to them. Some parts of the server you need roles to access. Don't worry, you can get them by reacting to the message in the get-roles-here channel!")
 
 def setup(bot):
     bot.add_cog(Stats(bot))

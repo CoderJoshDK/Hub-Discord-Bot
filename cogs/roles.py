@@ -51,10 +51,13 @@ class Roles(commands.Cog):
             role = self.reactionToRole[payload.emoji.name]
             await member.remove_roles(role)
     
-    ### Have bot add reaction to the above message ###
+    
     @commands.command()
     @has_permissions(administrator=True)
     async def react(self, ctx, emoji):
+        """
+        React to the above msg as the bot
+        """
         await ctx.message.delete()
         
         messages = await ctx.channel.history(limit=2).flatten()

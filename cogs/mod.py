@@ -43,7 +43,7 @@ class Mod(commands.Cog):
     async def on_command_error(self, ctx, error):
         if hasattr(ctx.command, 'on_error'):
             pass
-        ignored = (commands.CommandNotFound, )
+        ignored = (commands.CommandNotFound, commands.UserInputError)
         error = getattr(error, 'original', error)
         if isinstance(error, ignored):
             return
@@ -66,7 +66,10 @@ class Mod(commands.Cog):
 
     ### Mute someone ###
     @commands.command()
-    async def mute(self, ctx, member : discord.Member, time="5m", *, reason="spam"):    
+    async def mute(self, ctx, member : discord.Member, time="5m", *, reason="spam"):
+        """
+        Make it so that a user can not interact with the server. Talk or type
+        """    
         # Set time to right seconds
         seconds = None
         if time.endswith("m"):
@@ -80,11 +83,14 @@ class Mod(commands.Cog):
         
         if seconds: # Mute someone and let people know it is happening
             # Mute embed
-            embed=discord.Embed(title="Jarvis:", color=0x00ff40)
-            embed.add_field(
-                name="Mute", 
-                value=f"{member.display_name} has been muted for {time} because of {reason} by {ctx.author.display_name}", 
-                inline=True
+            embed=discord.Embed(
+                title="Muted",
+                description=f"{member.display_name} has been muted for {time} because of {reason} by {ctx.author.display_name}",
+                color=0x00ff40
+            )
+            embed.set_author(
+                name=self.bot.user.name,
+                icon_url=self.bot.user.avatar_url
             )
             await ctx.send(embed=embed)
             
@@ -112,46 +118,60 @@ class Mod(commands.Cog):
                 await member.add_roles(member_role) # Make them a member again
             
             # Unmute embed
-            embed=discord.Embed(title="Jarvis:", color=0x00ff40)
-            embed.add_field(
-                name="Unmuted", 
-                value=f"{member.display_name} has been unmuted. {time} has past", 
-                inline=True
+            embed=discord.Embed(
+                title="Unmuted", 
+                description=f"{member.display_name} has been unmuted. {time} has past",
+                color=0x00ff40
+            )
+            embed.set_author(
+                name=self.bot.user.name,
+                icon_url=self.bot.user.avatar_url
             )
             await ctx.send(embed=embed)
 
         else: # Invalid time
-            embed=discord.Embed(title="Jarvis:", color=0xf22929)
-            embed.add_field(
-                name="Mute", 
-                value="Enter a valid amount of time.", 
-                inline=False
-                )
+            embed=discord.Embed(
+                title="Error on mute", 
+                description="Enter a valid amount of time.",
+                color=0xf22929
+            )
             embed.add_field(
                 name="Example", 
                 value="30s, 10m, 2d, 1h", 
-                inline=True)
+                inline=True
+            )
+            embed.set_author(
+                name=self.bot.user.name,
+                icon_url=self.bot.user.avatar_url
+            )
             await ctx.send(embed=embed)
     ### When something goes wrong with the mute function ###
     @mute.error
     async def mute_error(self, ctx, error):
-        embed=discord.Embed(title="Jarvis:", color=0xf22929)
+        embed=discord.Embed(title="Mute", color=0xf22929)
         embed.add_field(
             name="Mute", 
             value="You did something wrong", 
             inline=False
-            )
+        )
         embed.add_field(
-            name="Use", 
+            name="Usage", 
             value="!mute [@user] [time] [reason] (you must be a mod or above to use this function)", 
             inline=False
-            )
+        )
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
         await ctx.send(embed=embed)
 
     
     ### Unmute a member if they served long enough ###
     @commands.command()
     async def unmute(self, ctx, member:discord.Member):
+        """
+        Unmute a user. They can interact with the server again
+        """
         muted_role = get(ctx.guild.roles, name="Muted")
         member_role = get(ctx.guild.roles, name="Member")
 
@@ -161,23 +181,34 @@ class Mod(commands.Cog):
             self.mutedMembers.remove(member) # Removes them from the muted list
             await member.edit(mute=False, deafen=False) # Un server mute and deafen
         except: # If they are not in the muted list, let them know
-            embed = discord.Embed(color=0xe74c3c) 
-            embed.add_field(
-                name="Unmute",
-                value=f"{member.display_name} was not muted"
-            )
+            embed = discord.Embed(
+                title="Unmute",
+                description=f"{member.display_name} was not muted",
+                color=0xe74c3c
+            ) 
         else: # If they are in the muted list say it has finished
-            embed = discord.Embed(color=0x1f8b4c) 
+            embed = discord.Embed(
+                title="Unmute",
+                description=f"{member.display_name} has been unmuted",
+                color=0x1f8b4c
+            ) 
             embed.add_field(
                 name="Unmute",
                 value=f"{member.display_name} has been unmuted"
             )
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
         await ctx.send(embed=embed)
         
     
     ### Clear a channels messages by some amount ###
     @commands.command()
     async def clear(self, ctx, amount=10):
+        """
+        Delete the amount specified messeges on channel
+        """
         filename = f"{ctx.channel.name}_clear.txt" # Make text file
         with open(filename, "w") as file:
             file.write(f"{ctx.author} cleared {amount} messages of {ctx.channel.name} in {ctx.channel.category.name}\n\n") # Log action
@@ -190,17 +221,24 @@ class Mod(commands.Cog):
         await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
     @clear.error
     async def clear_error(self, ctx, error):
-        embed = discord.Embed(color=0xe74c3c, title="Error") 
-        embed.add_field(
-            name="Clear",
-            value=f"To use the clear command, type !clear [amount]\nThere was an error somewhere."
+        embed = discord.Embed(
+            color=0xe74c3c, 
+            title="Clear Error",
+            description=f"To use the clear command, type !clear [amount]\nThere was an error somewhere"
+            ) 
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
         )
         await ctx.send(embed=embed) # Post the embed
-
-        embed = discord.Embed(color=0xe74c3c, title="Error") 
-        embed.add_field(
-            name="Clear",
-            value=f"An error on the clear command\n{error}"
+        embed = discord.Embed(
+            color=0xe74c3c, 
+            title="Clear Error",
+            description=f"An error on the clear command\n{error}"
+            ) 
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
         )
         await self.hiddenLogRoom.send(embed=embed) # Log what the error was
     
@@ -208,6 +246,9 @@ class Mod(commands.Cog):
     ### Clear a channel's messages by some amount for some user ###
     @commands.command()
     async def purge(self, ctx, member:discord.Member, amount=10):
+        """
+        Delete Messeges of a specific user
+        """
         filename = f"{member.display_name}_purge.txt" # Make a text file
 
         def is_m(m): # Checks if messages author is the member being purged
@@ -228,17 +269,25 @@ class Mod(commands.Cog):
         await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
     @purge.error
     async def purge_error(self, ctx, error):
-        embed = discord.Embed(color=0xe74c3c, title="Error") 
-        embed.add_field(
-            name="Purge",
-            value=f"To use the purge command, type !purge <member> [amount]\nThere was an error somewhere. It has been logged and will be looked into"
+        embed = discord.Embed(
+            color=0xe74c3c, 
+            title="Purge Error",
+            description=f"To use the purge command, type !purge <member> [amount]\nThere was an error somewhere. It has been logged and will be looked into"
+        ) 
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
         )
         await ctx.send(embed=embed) # Post the embed
         
-        embed = discord.Embed(color=0xe74c3c, title="Error") 
-        embed.add_field(
-            name="Purge",
-            value=f"An error on the purge command\n{error}"
+        embed = discord.Embed(
+            color=0xe74c3c, 
+            title="Error",
+            description=f"An error on the purge command\n{error}"
+        ) 
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
         )
         await self.hiddenLogRoom.send(embed=embed) # Log what the error was
 

@@ -48,11 +48,12 @@ class Joke(commands.Cog):
     ### Penis error handaling ###
     @penis.error
     async def penis_error(self, ctx, error):
-        embed = discord.Embed(title="Jarvis", color=discord.Color.red)
-        embed.add_field(
-            name="You used this function wrong",
-            value="Either just do !penis for your own size or !penis @user for some other members size"
+        embed = discord.Embed(
+            title="You used this function wrong", 
+            description="Either just do !penis for your own size or !penis @user for some other members size", 
+            color=0xe74c3c
         )
+        embed.set_author(name=self.bot.user.name, icon_url=self.bot.user.avatar_url)
         await ctx.send(embed=embed)
 
     ### Randomly messes with people when they are typing ###

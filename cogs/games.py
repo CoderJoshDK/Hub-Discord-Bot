@@ -24,59 +24,60 @@ class Games(commands.Cog):
         self.startup()
 
     
-    ### Rolls a dice ###
     @commands.command()
     async def dice(self, ctx):
+        """
+        Role a random number 1-6
+        """
         number = random.randint(1,6)
         
-        embed = discord.Embed(color=self.purple)
-        embed.add_field(
-                name="Dice",
-                value=f"You rolled a {number}"
-            )
-        await ctx.send(embed=embed)
-    ### Error Handling ###
-    @dice.error
-    async def dice_error(self, ctx, error):
-        embed = discord.Embed(color=self.red)
-        embed.add_field(
-                name="Dice",
-                value=f"How did you mess this up? Just type ONLY !dice"
-            )
+        embed = discord.Embed(
+            title="Dice", 
+            description=f"You rolled a {number}", 
+            color=self.purple
+        )
+
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
         await ctx.send(embed=embed)
 
-    
-    ### Flips a coin ###
+
     @commands.command()
     async def coin(self, ctx):
+        """
+        Flip a coin for either heads or tails
+        """
         flip = random.randint(0,1)
         
-        embed = discord.Embed(color=self.purple)
-        if flip:
-            embed.add_field(
-                name="Coin",
-                value="Heads"
-            )
-        else:
-            embed.add_field(
-                name="Coin",
-                value="Tails"
-            )
-        await ctx.send(embed=embed)
-    ### Error Handling ###
-    @coin.error
-    async def coin_error(self, ctx, error):
-        embed = discord.Embed(color=self.red)
-        embed.add_field(
-                name="Coin",
-                value=f"How did you mess this up? Just type ONLY !coin"
-            )
+        embed = discord.Embed(
+            title="Coin",
+            description="Heads" if flip else "Tails",
+            color=self.purple
+        )
+
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
         await ctx.send(embed=embed)
 
-    ### Does a poll to see what map to play ###
+
     @commands.command()
     async def map(self, ctx):
-        msg = await ctx.send("What map would you guys like to play? React to this message to vote!")
+        """
+        Do a poll to see what Among Us map to play
+        """
+        embed = discord.Embed(
+            title="Pick the next map we play on",
+            description="What map would you like to play? React to cast your vote!"
+        )
+        embed.set_author(
+            name=self.bot.user.name,
+            icon_url=self.bot.user.avatar_url
+        )
+        msg = await ctx.send(embed=embed)
         emojis = [get(ctx.guild.emojis, name="Skeld"), get(ctx.guild.emojis, name="Mira"), get(ctx.guild.emojis, name="Polus")]
         for emoji in emojis:
             await msg.add_reaction(emoji)
