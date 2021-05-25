@@ -31,8 +31,7 @@ class Games(commands.Cog):
     )
     async def penis(self, ctx, member:discord.Member=None):
 
-        if not member:
-            member = ctx.author
+        member = member or ctx.author
 
         # Test to see if a size exists already
         try:

@@ -50,7 +50,7 @@ class Mod(commands.Cog):
             if value['muteDuration'] is None:
                 continue
             
-            unmuteTime = value['muteAt'] + relativedelta(seconds=value['muteDuration'])
+            unmuteTime = value['mutedAt'] + relativedelta(seconds=value['muteDuration'])
 
             if currentTime >= unmuteTime:
                 guild = self.bot.get_guild(value['guildId'])
@@ -76,7 +76,7 @@ class Mod(commands.Cog):
                             await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
                     except:
                         pass
-                    
+
                 await self.bot.mutes.delete(member.id)
                 try:
                     self.bot.muted_users.pop(member.id)
@@ -100,6 +100,7 @@ class Mod(commands.Cog):
     async def mute(self, ctx, member : discord.Member, time: TimeConverter=None, *, reason=None):
         
         role = get(ctx.guild.roles, name="Muted")
+        pfp = member.avatar_url
         try: 
             # creates muted role 
             if not role:
@@ -167,7 +168,7 @@ class Mod(commands.Cog):
             
             embed.set_author(
                 name=member.display_name,
-                icon_url=member.avatar_url
+                icon_url=pfp
             )
             await ctx.send(embed=embed)
             await sendLog(self, ctx, embed)
@@ -192,7 +193,7 @@ class Mod(commands.Cog):
             )
             embed.set_author(
                 name=member.display_name,
-                icon_url=member.avatar_url
+                icon_url=pfp
             )
             await ctx.send(embed=embed)
             await sendLog(self, ctx, embed)
@@ -216,7 +217,7 @@ class Mod(commands.Cog):
             color=0xe74c3c, 
             title="Mute Error",
             description=f"An error on the mute command\n{error}"
-            ) 
+        ) 
         embed.set_author(
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
@@ -233,6 +234,7 @@ class Mod(commands.Cog):
     @commands.has_guild_permissions(mute_members=True)
     async def unmute(self, ctx, member:discord.Member):
         role = get(ctx.guild.roles, name="Muted")
+        pfp = member.avatar_url
 
         await self.bot.mutes.delete(member.id)
         try:
@@ -261,7 +263,7 @@ class Mod(commands.Cog):
         ) 
         embed.set_author(
             name=member.display_name,
-            icon_url=member.avatar_url
+            icon_url=pfp
         )
         await ctx.send(embed=embed)
         await sendLog(self, ctx, embed)
