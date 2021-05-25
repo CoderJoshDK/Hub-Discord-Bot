@@ -76,6 +76,7 @@ class Mod(commands.Cog):
                             await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
                     except:
                         pass
+                    
                 await self.bot.mutes.delete(member.id)
                 try:
                     self.bot.muted_users.pop(member.id)
