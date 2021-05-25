@@ -2,7 +2,7 @@ import discord
 import os
 from pathlib import Path
 from discord.ext import commands
-from discord.ext.commands import has_permissions
+# from discord.ext.commands import has_permissions
 
 import logging
 
@@ -185,6 +185,7 @@ async def eval(ctx, *, code):
     )
 
     await pager.start(ctx)
+
 
 '''
 To do an event with a cog do 

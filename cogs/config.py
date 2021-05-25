@@ -3,6 +3,7 @@ import random
 import traceback
 
 import asyncio
+from utils.util import Pag, dm_user
 import discord
 from discord.ext import commands
 
@@ -325,6 +326,39 @@ class Config(commands.Cog):
                             inline=False
                         )
                 await ctx.send(embed=embed)
+
+    @commands.command(name="database", aliases=["db", "mongodb"])
+    @commands.is_owner()
+    async def data(self, ctx, db=None):
+        """
+        DM The bot owner with the documents stored in the data base
+        Params:
+         - db (str) : the document that info should be gathered
+        """
+
+        # Update with each mongoDB file
+        dbs = {
+            'config': self.bot.config, 
+            'mutes': self.bot.mutes, 
+            'penisSize': self.bot.penisSize, 
+            'invites': self.bot.invites, 
+            'command_usage': self.bot.command_usage, 
+            'reaction_roles': self.bot.reaction_roles
+        }
+        
+        if db in dbs:
+            db = dbs[db]
+            output = ""
+            for document in await db.get_all():
+                output += document + "\n"
+
+                outputs = [output[i:i + 2000] for i in range(0, len(output), 2000)]
+                for out in outputs:
+                    await dm_user(self.bot.owner_id, msg=out, self=self)
+        else:
+            # Display all the names that are available if no name was given or the wrong name was given
+            msg = "The available data to look at is" + " / ".join(dbs)
+            await dm_user(self.bot.owner_id, msg=msg, self=self)
 
 def setup(bot):
     bot.add_cog(Config(bot))
