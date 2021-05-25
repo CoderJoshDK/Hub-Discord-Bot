@@ -145,13 +145,13 @@ class Stats(commands.Cog):
     async def report(self, ctx, member:discord.Member, *, reason):
         await sendLog(self, ctx, msg=f"<@!{ctx.author.id}> has reported <@!{member.id}> because of {reason}")
         await ctx.message.delete()
-        await ctx.author.send("Thank you for reporting. We will look into it and press action if needed", delete_after=10)
+        await dm_user(ctx.author, msg="Thank you for reporting. We will look into it and press action if needed")
     ### If they report wrong ###
     @report.error
     async def report_error(self, ctx, error):
-        await ctx.author.send(
-            "You have tried to report a user but did something wrong. To use correctly, type `!report @user they did something bad`. We will look into it and get back to you",
-            delete_after=15
+        await dm_user(
+            ctx.author, 
+            msg="You have tried to report a user but did something wrong. To use correctly, type `!report @user they did something bad`. We will look into it and get back to you"
         )
         await sendLog(self, ctx, msg=f"<@!{ctx.author.id}> has tried to use the report function but failed.\nThey typed: {ctx.message.content}")
         await ctx.message.delete()

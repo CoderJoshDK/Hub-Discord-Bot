@@ -21,9 +21,13 @@ class Events(commands.Cog):
     @commands.Cog.listener()
     async def on_command_error(self, ctx, error):
         # Ignore these errors
-        ignored = (commands.CommandNotFound, commands.UserInputError)
+        ignored = (commands.CommandNotFound)
         if isinstance(error, ignored):
             return
+
+        # If the user used a command wrong, show them the help page for it
+        if isinstance(error, commands.UserInputError):
+            return await ctx.invoke(self.bot.get_command("help"), entity=ctx.invoked_with)
 
         if isinstance(error, commands.CommandOnCooldown):
             # If the command is currently on cooldown trip this
