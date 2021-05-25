@@ -1,6 +1,7 @@
 import asyncio
 
 import discord
+from discord.ext import commands
 from discord.ext.buttons import Paginator
 
 class Pag(Paginator):
@@ -111,7 +112,7 @@ async def dm_user(member, msg=None, embed=None, file=None, ctx=None):
     """
     if isinstance(member, int):
         if not ctx:
-            raise Exception("Expected ctx to fetch member")
+            raise commands.UserInputError("Excpected ctx to be able to fetch the member")
         member = await ctx.guild.fetch_member(member)
     if member is not None:
         channel = member.dm_channel
