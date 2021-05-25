@@ -1,149 +1,206 @@
+from utils.util import dm_user, sendAdmin, sendLog
 import discord, asyncio
-from discord.ext import commands
-from discord.ext.commands import has_permissions
+from discord.ext import commands, tasks
 from discord.utils import get
+
+import os
+import traceback
+import re
+from copy import deepcopy
+from dateutil.relativedelta import relativedelta
+import datetime
+
+
+time_regex = re.compile("(?:(\d{1,5})(h|s|m|d))+?") # pylint: disable=anomalous-backslash-in-string
+time_dict = {'h': 3600, 's': 1, 'm': 60, 'd': 86400}
+
+class TimeConverter(commands.Converter):
+    ### A class and function for converting a time string into a time in seconds ###
+    async def convert(self, ctx, argument):
+        args= argument.lower()
+        matches = re.findall(time_regex, args)
+        time = 0
+        for value, key in matches:
+            try:
+                time += time_dict[key] * float(value)
+            except KeyError:
+                raise commands.BadArgument(f"{key} is an invalid key. h|s|m|d are valid")
+            except ValueError:
+                raise commands.BadArgument(f"{value} is not a number")
+        return round(time)
 
 class Mod(commands.Cog):
 
     ### On start of code ####
     def __init__(self, bot):
         self.bot = bot
-        if len(bot.guilds) > 0:
-            self.startup()
-    
-    
-    def startup(self):
-        self.guild = self.bot.guilds[0]
-        self.mutedMembers = []
-        self.mod = get(self.guild.roles, name="Mod")
-        self.admin = get(self.guild.roles, name="Admin")
-        self.logRoom = get(self.guild.channels, id=780993363146178580)
-        self.hiddenLogRoom = get(self.guild.channels, id=789877007638986772)
+        self.mute_task = self.check_current_mutes.start() # pylint: disable=no-member
+
+    def cog_unload(self):
+        self.mute_task.cancel()
 
     
-    ### Set up the roles####
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.startup()
-        muted_role = get(self.guild.roles, name="Muted")
-        for member in self.guild.members:
-            if muted_role in member.roles:
-                await member.remove_roles(muted_role, reason="Bot reloaded")
-
+    # <---- Cog tasks ---->
     
-    ### Make sure only admin or mods can use this cog ###
-    async def cog_check(self, ctx):
-        return ctx.author.top_role >= self.mod
+    @tasks.loop(minutes=5)
+    async def check_current_mutes(self):
+        currentTime = datetime.datetime.now()
+        mutes = deepcopy(self.bot.muted_users)
+        for key, value, in mutes.items():
+            if value['muteDuration'] is None:
+                continue
+            
+            unmuteTime = value['muteAt'] + relativedelta(seconds=value['muteDuration'])
 
-   
-    ### Deal with diffrent errors ###
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx, error):
-        if hasattr(ctx.command, 'on_error'):
-            pass
-        ignored = (commands.CommandNotFound, commands.UserInputError)
-        error = getattr(error, 'original', error)
-        if isinstance(error, ignored):
-            return
-        elif isinstance(error, commands.CheckFailure):
-            await ctx.channel.purge(limit=1)
-            await ctx.send("You do not have permision to do that")
-            return
+            if currentTime >= unmuteTime:
+                guild = self.bot.get_guild(value['guildId'])
+                member = guild.get_member(key)
 
-    
-    ### When someon types a message ###
-    @commands.Cog.listener()
-    async def on_message(self, message):
-        if message.author == self.bot.user:
-            return
+                role = get(guild.roles, name='Muted')
+                if role in member.roles:
+                    await member.remove_roles(role)
+                    # Let the guild know that a user was unmuted
+                    logRoom = await self.bot.config.find(guild.id)
+                    if logRoom and "logroom_channel_id" in logRoom:
+                        channel = await self.bot.fetch_channel(logRoom["logroom_channel_id"])
+                        try:
+                            await channel.send(f"Unmuted : {member.display_name}")
+                        except Exception:
+                            channel = guild.public_updates_channel
+                            await channel.send(f"Unmuted : {member.display_name}")
+                            await channel.send("The log room channel set up for this server is not accessible.\nTo fix the log room use command `logroom`")
+                    else:
+                        channel = guild.public_updates_channel
+                        await channel.send(f"Unmuted : {member.display_name}")
+                        await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
 
-        ### If a muted member can still somehow type, the thing they type will be deleted ###
-        if message.author in self.mutedMembers:
-            await message.delete()
+                await self.bot.mutes.delete(member.id)
+                try:
+                    self.bot.muted_users.pop(member.id)
+                except KeyError:
+                    pass
+                    
+
+    @check_current_mutes.before_loop
+    async def before_check_current_mutes(self):
+        await self.bot.wait_until_ready()
 
 
     ### Mute someone ###
-    @commands.command()
-    async def mute(self, ctx, member : discord.Member, time="5m", *, reason="spam"):
-        """
-        Make it so that a user can not interact with the server. Talk or type
-        """    
-        # Set time to right seconds
-        seconds = None
-        if time.endswith("m"):
-            seconds = int(time[:-1]) * 60
-        elif time.endswith("s"):
-            seconds = int(time[:-1])
-        elif time.endswith("h"):
-            seconds = int(time[:-1]) * 60 * 60
-        elif time.endswith("d"):
-            seconds = int(time[:-1]) * 60 * 60 * 24
+    @commands.command(
+        name="mute",
+        description="Mute users on server and prevent them from typing or joining VC",
+        usage="<user> [time] [reason]"
+    )
+    @commands.guild_only()
+    @commands.has_guild_permissions(mute_members=True)
+    async def mute(self, ctx, member : discord.Member, time: TimeConverter=None, *, reason=None):
         
-        if seconds: # Mute someone and let people know it is happening
-            # Mute embed
-            embed=discord.Embed(
-                title="Muted",
-                description=f"{member.display_name} has been muted for {time} because of {reason} by {ctx.author.display_name}",
-                color=0x00ff40
-            )
+        role = get(ctx.guild.roles, name="Muted")
+        try: 
+            # creates muted role 
+            if not role:
+                role = await ctx.guild.create_role(name="Muted", reason="To use for muting")
+            # Go through every channel and set up permissions
+            # Do this on every call to make sure that even if the channels were edited, the role still works
+            for channel in ctx.guild.channels: 
+                # removes permission to view and send in the channels 
+                await channel.set_permissions(
+                    role, 
+                    send_messages=False,                        
+                    read_message_history=False,
+                    read_messages=False
+                )
+        except discord.Forbidden:
+            return await ctx.send("I do not have permissions to set up a muted role\nMake sure to give me manage roles permission")
+    
+        # Test if the user is already muted. If so there is no need to do anything more
+        try:
+            if self.bot.muted_users[member.id] and role in member.roles:
+                await ctx.send(f"This user is already muted")
+                return
+        except KeyError:
+            pass
+        
+        # The information that will be stored in the file
+        data = {
+            '_id': member.id,
+            'mutedAt': datetime.datetime.now(),
+            'muteDuration': time or None,
+            'mutedBy': ctx.author.id,
+            'guildId': ctx.guild.id
+        }
+        await self.bot.mutes.upsert(data)
+
+        self.bot.muted_users[member.id] = data
+
+        await member.add_roles(role, reason=reason)
+        if member.voice:
+            await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
+
+        if not time:
+            await ctx.send(f"Muted {member.display_name}")
+        else:
+            minutes, seconds = divmod(time, 60)
+            hours, minutes = divmod(minutes, 60)
+            if int(hours):
+                embed=discord.Embed(
+                    title=f"Muted by {ctx.author.display_name}",
+                    description=f"Muted {member.display_name} for {hours} hours, {minutes} minutes and {seconds} seconds\n{reason}",
+                    color=0x00ff40
+                )
+            elif int(minutes):
+                embed=discord.Embed(
+                    title=f"Muted by {ctx.author.display_name}",
+                    description=f"Muted {member.display_name} for {minutes} minutes and {seconds} seconds\n{reason}",
+                    color=0x00ff40
+                )
+            elif int(seconds):
+                embed=discord.Embed(
+                    title=f"Muted by {ctx.author.display_name}",
+                    description=f"Muted {member.display_name} for {seconds} seconds\n{reason}",
+                    color=0x00ff40
+                )
+            
             embed.set_author(
-                name=self.bot.user.name,
-                icon_url=self.bot.user.avatar_url
+                name=member.display_name,
+                icon_url=member.avatar_url
             )
             await ctx.send(embed=embed)
-            
-            ### Mute them and then unmute them after time ###
-            muted_role = get(ctx.guild.roles, name="Muted")
+            await sendLog(self, ctx, embed)
+        
+        if time and time < 300: # Do the timer here if the time left is small
+            await asyncio.sleep(time)
 
-            await member.add_roles(muted_role, reason=reason) # Make them muted
-            self.mutedMembers.append(member) # Put them on the muted list
+            if role in member.roles:
+                await member.remove_roles(role)
 
-            if member.voice:
-                await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
-            await self.logRoom.send(f"<@!{ctx.author.id}> muted <@!{member.id}> because of {reason} for {time}") # Log the mute
-
-            await asyncio.sleep(seconds) # Wait for time to pass
-
-            self.mutedMembers.remove(member) # Take them off the muted list
-
-            if self.guild.get_member(member.id) != None: # Can only do these things if member is still in guild or you get error
-                await member.remove_roles(muted_role, reason="Time is up") # Get rid of muted role
-            
+            await self.bot.mutes.delete(member.id)
+            try:
+                self.bot.muted_users.pop(member.id)
+            except KeyError:
+                pass
+                
             # Unmute embed
             embed=discord.Embed(
                 title="Unmuted", 
-                description=f"{member.display_name} has been unmuted. {time} has past",
+                description=f"{member.display_name} has been unmuted.",
                 color=0x00ff40
             )
             embed.set_author(
-                name=self.bot.user.name,
-                icon_url=self.bot.user.avatar_url
+                name=member.display_name,
+                icon_url=member.avatar_url
             )
             await ctx.send(embed=embed)
+            await sendLog(self, ctx, embed)
 
-        else: # Invalid time
-            embed=discord.Embed(
-                title="Error on mute", 
-                description="Enter a valid amount of time.",
-                color=0xf22929
-            )
-            embed.add_field(
-                name="Example", 
-                value="30s, 10m, 2d, 1h", 
-                inline=True
-            )
-            embed.set_author(
-                name=self.bot.user.name,
-                icon_url=self.bot.user.avatar_url
-            )
-            await ctx.send(embed=embed)
     ### When something goes wrong with the mute function ###
     @mute.error
     async def mute_error(self, ctx, error):
         embed=discord.Embed(
             title="Mute Error", 
             color=0xf22929,
-            description=f"Something went wrong. It has been logged and will be looked into.\nIf the user should be unmuted do it with !unmute"
+            description=f"Something went wrong. It has been logged and will be looked into"
         )
         embed.set_author(
             name=self.bot.user.name,
@@ -161,52 +218,62 @@ class Mod(commands.Cog):
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
         )
-        await self.hiddenLogRoom.send(embed=embed)
-
+        await dm_user(self.bot.owner.id, embed=embed, self=self)
     
     ### Unmute a member if they served long enough ###
-    @commands.command()
+    @commands.command(
+        name="unmute",
+        description="Umute a user. They can interact with the server again",
+        usage="<user>"
+    )
+    @commands.guild_only()
+    @commands.has_guild_permissions(mute_members=True)
     async def unmute(self, ctx, member:discord.Member):
-        """
-        Unmute a user. They can interact with the server again
-        """
-        muted_role = get(ctx.guild.roles, name="Muted")
+        role = get(ctx.guild.roles, name="Muted")
 
-        await member.remove_roles(muted_role, reason="They have been unmuted")     
+        await self.bot.mutes.delete(member.id)
         try:
-            self.mutedMembers.remove(member) # Removes them from the muted list
-            await member.edit(mute=False, deafen=False) # Un server mute and deafen
-        except: # If they are not in the muted list, let them know
+            self.bot.muted_users.pop(member.id)
+        except KeyError:
+            pass
+        
+        if role not in member.roles:
             embed = discord.Embed(
                 title="Unmute",
-                description=f"{member.display_name} was not muted",
+                description=f"This member is not muted",
                 color=0xe74c3c
-            ) 
-        else: # If they are in the muted list say it has finished
-            embed = discord.Embed(
-                title="Unmute",
-                description=f"{member.display_name} has been unmuted",
-                color=0x1f8b4c
-            ) 
-            embed.add_field(
-                name="Unmute",
-                value=f"{member.display_name} has been unmuted"
             )
+            embed.set_author(
+                name=self.bot.user.name,
+                icon_url=self.bot.user.avatar_url
+            )
+            await ctx.send(embed=embed)
+            return
+        
+        await member.remove_roles(role)
+        embed = discord.Embed(
+            title="Unmute",
+            description=f"{member.display_name} has been unmuted by {ctx.author}",
+            color=0x1f8b4c
+        ) 
         embed.set_author(
-            name=self.bot.user.name,
-            icon_url=self.bot.user.avatar_url
+            name=member.display_name,
+            icon_url=member.avatar_url
         )
         await ctx.send(embed=embed)
+        await sendLog(self, ctx, embed)
         
     
     ### Clear a channels messages by some amount ###
-    @commands.command()
-    async def clear(self, ctx, amount=10):
-        """
-        Delete the amount specified messeges on channel
-        """
+    @commands.command(
+        description="Delete the amount specified messeges on channel",
+        usage="[amount]"
+    )
+    @commands.guild_only()
+    @commands.has_guild_permissions(manage_messages=True)
+    async def clear(self, ctx, amount: int=10):
         filename = f"{ctx.channel.name}_clear.txt" # Make text file
-        with open(filename, "w") as file:
+        with open(filename, "w", encoding="UTF-8") as file:
             file.write(f"{ctx.author} cleared {amount} messages of {ctx.channel.name} in {ctx.channel.category.name}\n\n") # Log action
             async for msg in ctx.channel.history(limit=amount): # Go through channels messages
                 try:
@@ -214,7 +281,7 @@ class Mod(commands.Cog):
                 except:
                     file.write(f"{msg.created_at} - {msg.author.display_name}: Message could not be displayed\n")
         await ctx.channel.purge(limit=amount) # Delete messages
-        await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
+        await sendAdmin(self, ctx, file=discord.File(filename)) # Post the delete log
     @clear.error
     async def clear_error(self, ctx, error):
         embed = discord.Embed(
@@ -236,15 +303,17 @@ class Mod(commands.Cog):
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
         )
-        await self.hiddenLogRoom.send(embed=embed) # Log what the error was
+        await sendAdmin(self, ctx, embed=embed)
     
     
     ### Clear a channel's messages by some amount for some user ###
-    @commands.command()
+    @commands.command(
+        description="Delete Messeges of a specific user",
+        usage="<member> [amount]"
+    )
+    @commands.guild_only()
+    @commands.has_guild_permissions(manage_messages=True)
     async def purge(self, ctx, member:discord.Member, amount=10):
-        """
-        Delete Messeges of a specific user
-        """
         filename = f"{member.display_name}_purge.txt" # Make a text file
 
         def is_m(m): # Checks if messages author is the member being purged
@@ -253,7 +322,7 @@ class Mod(commands.Cog):
         with open(filename, "w", encoding="UTF-8") as file:
             file.write(f"{ctx.author} cleared {amount} messages of {member.display_name} in {ctx.channel.name}\n\n") # Log action
             
-            for channel in self.guild.text_channels: # Go through all text channels of guild
+            for channel in ctx.guild.text_channels: # Go through all text channels of guild
                 file.write(f"\nMessages from {channel.name} in {channel.category.name}:\n") # Break up the logs by channel
                 async for msg in channel.history(limit=amount): # Go through channel's messages
                     if msg.author == member:
@@ -262,7 +331,7 @@ class Mod(commands.Cog):
                         except:
                             file.write(f"{msg.created_at} - {msg.author.display_name}: Message could not be displayed\n")
                 await channel.purge(limit=amount, check=is_m) # Delete messages of member
-        await self.hiddenLogRoom.send(file=discord.File(filename)) # Post the delete log
+        await sendAdmin(self, ctx, file=discord.File(filename)) # Post the delete log
     @purge.error
     async def purge_error(self, ctx, error):
         embed = discord.Embed(
@@ -285,9 +354,7 @@ class Mod(commands.Cog):
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
         )
-        await self.hiddenLogRoom.send(embed=embed) # Log what the error was
-
-
-
+        await dm_user(self.bot.owner.id, embed=embed, self=self) # Log what the error was
+ 
 def setup(bot):
     bot.add_cog(Mod(bot))
