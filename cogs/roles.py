@@ -255,7 +255,7 @@ class Roles(commands.Cog):
         emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
         role = guild.get_role(emoji_data["role"])
 
-        member = payload.member
+        member = await guild.fetch_member(payload.user_id)
         
         # If the role is not already part of the member, add the role
         if role not in member.roles:
@@ -286,7 +286,7 @@ class Roles(commands.Cog):
         emoji_data = await self.bot.reaction_roles.find(str(payload.emoji))
         role = guild.get_role(emoji_data["role"])
 
-        member = payload.member
+        member = await guild.fetch_member(payload.user_id)
         
         # If the role is already part of the member, remove the role
         if role in member.roles:
