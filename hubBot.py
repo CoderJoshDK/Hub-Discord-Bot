@@ -50,7 +50,7 @@ bot.config_token = secret_file['token']
 bot.connection_url = secret_file['mongo']
 logging.basicConfig(level=logging.INFO)
 
-bot.version = "1.0.0"
+bot.version = "1.1.0"
 bot.DEFAULTPREFIX = '!'
 
 bot.blacklisted_users = {}
@@ -121,7 +121,7 @@ async def on_message(msg):
         return
     
     # Blacklisted users are ignored
-    if msg.guild.id in bot.blacklisted_users:
+    if msg.guild and msg.guild.id in bot.blacklisted_users:
         if msg.author in bot.blacklisted_users[msg.guild.id]:
             return 
 
@@ -146,6 +146,7 @@ async def eval(ctx, *, code):
     """
     # Clean up a code block
     code = clean_code(code)
+    await ctx.message.delete()
 
     # Variables to be passed through so the code that is ran
     # Is able to access these variables as their scope
@@ -180,7 +181,7 @@ async def eval(ctx, *, code):
         timeout=100,
         entries=[result[i:i + 2000] for i in range(0, len(result), 2000)],
         length=1,
-        prefitx="```py\n",
+        prefix="```py\n",
         suffix="```"
     )
 

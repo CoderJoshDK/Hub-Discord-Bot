@@ -327,7 +327,7 @@ class Config(commands.Cog):
                         )
                 await ctx.send(embed=embed)
 
-    @commands.command(name="database", aliases=["db", "mongodb"])
+    @commands.command(name="database", aliases=["db", "mongodb", "data"])
     @commands.is_owner()
     async def data(self, ctx, db=None):
         """
@@ -350,15 +350,17 @@ class Config(commands.Cog):
             db = dbs[db]
             output = ""
             for document in await db.get_all():
-                output += document + "\n"
+                output += str(document) + "\n"
 
                 outputs = [output[i:i + 2000] for i in range(0, len(output), 2000)]
                 for out in outputs:
-                    await dm_user(self.bot.owner_id, msg=out, self=self)
+                    await dm_user(self.bot.owner_id, msg=out, ctx=ctx)
+            if not output:
+                await dm_user(self.bot.owner_id, msg="This document is empty", ctx=ctx)
         else:
             # Display all the names that are available if no name was given or the wrong name was given
-            msg = "The available data to look at is" + " / ".join(dbs)
-            await dm_user(self.bot.owner_id, msg=msg, self=self)
+            msg = "The available data to look at is " + " / ".join(dbs)
+            await dm_user(self.bot.owner_id, msg=msg, ctx=ctx)
 
 def setup(bot):
     bot.add_cog(Config(bot))

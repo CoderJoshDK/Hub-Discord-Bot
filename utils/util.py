@@ -71,14 +71,14 @@ async def sendLog(self, ctx, msg=None, embed=None, file=None):
     if logRoom and "logroom_channel_id" in logRoom:
         channel = await self.bot.fetch_channel(logRoom["logroom_channel_id"])
         try:
-            await channel.send(msg, embed=embed, file=file)
+            await channel.send(content=msg, embed=embed, file=file)
         except Exception:
             channel = ctx.guild.public_updates_channel
-            await channel.send(msg, embed=embed, file=file)
+            await channel.send(content=msg, embed=embed, file=file)
             await channel.send("The log room channel set up for this server is not accessible.\nTo fix the log room use command `logroom`")
     else:
         channel = ctx.guild.public_updates_channel
-        await channel.send(msg, embed=embed, file=file)
+        await channel.send(content=msg, embed=embed, file=file)
         await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
 
 async def sendAdmin(self, ctx, msg=None, embed=None, file=None):
@@ -89,32 +89,32 @@ async def sendAdmin(self, ctx, msg=None, embed=None, file=None):
     if adminRoom and "admin_channel_id" in adminRoom:
         channel = await self.bot.fetch_channel(adminRoom["admin_channel_id"])
         try:
-            await channel.send(msg, embed=embed, file=file)
+            await channel.send(content=msg, embed=embed, file=file)
         except Exception:
             channel = ctx.guild.public_updates_channel
-            await channel.send(msg, embed=embed, file=file)
+            await channel.send(content=msg, embed=embed, file=file)
             await channel.send(
                 """The admin room channel set up for this server is not accessible.
                 To fix the admin room use command `adminroom`"""
             )
     else:
         channel = ctx.guild.public_updates_channel
-        await channel.send(msg, embed=embed, file=file)
+        await channel.send(content=msg, embed=embed, file=file)
         await channel.send(
             """No admin room is setup for this server. To setup an admin room use command `adminroom`
             The current channel can be used as the admin room just remember that the info sent might be sensative."""
         )
 
-async def dm_user(member, msg=None, embed=None, file=None, self=None):
+async def dm_user(member, msg=None, embed=None, file=None, ctx=None):
     """
     Send a dm to a user
     """
     if isinstance(member, int):
-        if not self:
-            raise Exception("Expected an object's self to be passed to extract bot var")
-        member = await self.bot.fetch_member(member)
+        if not ctx:
+            raise Exception("Expected ctx to fetch member")
+        member = await ctx.guild.fetch_member(member)
     if member is not None:
         channel = member.dm_channel
         if channel is None:
             channel = await member.create_dm()
-        await channel.send(msg, embed=embed, file=file)
+        await channel.send(content=msg, embed=embed, file=file)

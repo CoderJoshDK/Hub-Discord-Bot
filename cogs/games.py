@@ -35,10 +35,10 @@ class Games(commands.Cog):
 
         # Test to see if a size exists already
         try:
-            size = self.bot.penis_size[member.id]["size"]
+            size = self.bot.penis_size[member.id]
         except KeyError:
             # If it does not already exist, make the data and add it to file
-            size = "=" * random.randint(0,10)
+            size = random.randint(0,10)
         
             data = {
                 '_id': member.id,
@@ -46,13 +46,14 @@ class Games(commands.Cog):
             }
             await self.bot.penisSize.upsert(data)
 
-            self.bot.penis_size[member.id] = data
+            self.bot.penis_size[member.id] = size
 
         # Display the penis
+        bigBoy = "=" * size
         embed = discord.Embed(color=0xff00ff)
         embed.add_field(
             name=f"{member.display_name}'s Penis Size",
-            value=f"8{size}D"
+            value=f"8{bigBoy}D"
         )
         await ctx.send(embed=embed)    
     

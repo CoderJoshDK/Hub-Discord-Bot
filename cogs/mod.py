@@ -65,14 +65,14 @@ class Mod(commands.Cog):
                         if logRoom and "logroom_channel_id" in logRoom:
                             channel = await self.bot.fetch_channel(logRoom["logroom_channel_id"])
                             try:
-                                await channel.send(f"Unmuted : {member.display_name}")
+                                await channel.send(f"Unmuted : {member.mention}")
                             except Exception:
                                 channel = guild.public_updates_channel
-                                await channel.send(f"Unmuted : {member.display_name}")
+                                await channel.send(f"Unmuted : {member.mention}")
                                 await channel.send("The log room channel set up for this server is not accessible.\nTo fix the log room use command `logroom`")
                         else:
                             channel = guild.public_updates_channel
-                            await channel.send(f"Unmuted : {member.display_name}")
+                            await channel.send(f"Unmuted : {member.mention}")
                             await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
                     except:
                         pass
@@ -143,26 +143,26 @@ class Mod(commands.Cog):
             await member.edit(voice_channel=None)     # Take them out of voice chat if they are in one 
 
         if not time:
-            await ctx.send(f"Muted {member.display_name}")
+            await ctx.send(f"Muted {member.mention}")
         else:
             minutes, seconds = divmod(time, 60)
             hours, minutes = divmod(minutes, 60)
             if int(hours):
                 embed=discord.Embed(
                     title=f"Muted by {ctx.author.display_name}",
-                    description=f"Muted {member.display_name} for {hours} hours, {minutes} minutes and {seconds} seconds\n{reason}",
+                    description=f"Muted {member.mention} for {hours} hours, {minutes} minutes and {seconds} seconds\n{reason}",
                     color=0x00ff40
                 )
             elif int(minutes):
                 embed=discord.Embed(
                     title=f"Muted by {ctx.author.display_name}",
-                    description=f"Muted {member.display_name} for {minutes} minutes and {seconds} seconds\n{reason}",
+                    description=f"Muted {member.mention} for {minutes} minutes and {seconds} seconds\n{reason}",
                     color=0x00ff40
                 )
             elif int(seconds):
                 embed=discord.Embed(
                     title=f"Muted by {ctx.author.display_name}",
-                    description=f"Muted {member.display_name} for {seconds} seconds\n{reason}",
+                    description=f"Muted {member.mention} for {seconds} seconds\n{reason}",
                     color=0x00ff40
                 )
             
@@ -171,7 +171,7 @@ class Mod(commands.Cog):
                 icon_url=pfp
             )
             await ctx.send(embed=embed)
-            await sendLog(self, ctx, embed)
+            await sendLog(self, ctx, embed=embed)
         
         if time and time < 300: # Do the timer here if the time left is small
             await asyncio.sleep(time)
@@ -188,7 +188,7 @@ class Mod(commands.Cog):
             # Unmute embed
             embed=discord.Embed(
                 title="Unmuted", 
-                description=f"{member.display_name} has been unmuted.",
+                description=f"{member.mention} has been unmuted.",
                 color=0x00ff40
             )
             embed.set_author(
@@ -196,7 +196,7 @@ class Mod(commands.Cog):
                 icon_url=pfp
             )
             await ctx.send(embed=embed)
-            await sendLog(self, ctx, embed)
+            await sendLog(self, ctx, embed=embed)
 
     ### When something goes wrong with the mute function ###
     @mute.error
@@ -222,7 +222,7 @@ class Mod(commands.Cog):
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
         )
-        await dm_user(self.bot.owner.id, embed=embed, self=self)
+        await dm_user(self.bot.owner.id, embed=embed, ctx=ctx)
     
     ### Unmute a member if they served long enough ###
     @commands.command(
@@ -258,7 +258,7 @@ class Mod(commands.Cog):
         await member.remove_roles(role)
         embed = discord.Embed(
             title="Unmute",
-            description=f"{member.display_name} has been unmuted by {ctx.author}",
+            description=f"{member.mention} has been unmuted by {ctx.author.mention}",
             color=0x1f8b4c
         ) 
         embed.set_author(
@@ -266,7 +266,7 @@ class Mod(commands.Cog):
             icon_url=pfp
         )
         await ctx.send(embed=embed)
-        await sendLog(self, ctx, embed)
+        await sendLog(self, ctx, embed=embed)
         
     
     ### Clear a channels messages by some amount ###
@@ -359,7 +359,7 @@ class Mod(commands.Cog):
             name=self.bot.user.name,
             icon_url=self.bot.user.avatar_url
         )
-        await dm_user(self.bot.owner.id, embed=embed, self=self) # Log what the error was
+        await dm_user(self.bot.owner.id, embed=embed, ctx=ctx) # Log what the error was
  
 def setup(bot):
     bot.add_cog(Mod(bot))

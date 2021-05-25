@@ -82,6 +82,7 @@ class Stats(commands.Cog):
 
     @commands.command(
         name="commandstats",
+        aliases=["usage"],
         description="Show an overall usage for each command"
     )
     @commands.cooldown(1, 5,  commands.BucketType.guild)
@@ -119,7 +120,7 @@ class Stats(commands.Cog):
             # Add the commands and their usage to the page list
             pages.append(message)
         
-        await Pag(title="Command Usage Statistics", color=0xC9B4F4, entries=pages, lenght=1).start(ctx)
+        await Pag(title="Command Usage Statistics", color=0xC9B4F4, entries=pages, length=1).start(ctx)
 
 
     ### Show the number of members in the server ###
