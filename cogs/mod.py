@@ -59,21 +59,23 @@ class Mod(commands.Cog):
                 role = get(guild.roles, name='Muted')
                 if role in member.roles:
                     await member.remove_roles(role)
-                    # Let the guild know that a user was unmuted
-                    logRoom = await self.bot.config.find(guild.id)
-                    if logRoom and "logroom_channel_id" in logRoom:
-                        channel = await self.bot.fetch_channel(logRoom["logroom_channel_id"])
-                        try:
-                            await channel.send(f"Unmuted : {member.display_name}")
-                        except Exception:
+                    try:
+                        # Let the guild know that a user was unmuted
+                        logRoom = await self.bot.config.find(guild.id)
+                        if logRoom and "logroom_channel_id" in logRoom:
+                            channel = await self.bot.fetch_channel(logRoom["logroom_channel_id"])
+                            try:
+                                await channel.send(f"Unmuted : {member.display_name}")
+                            except Exception:
+                                channel = guild.public_updates_channel
+                                await channel.send(f"Unmuted : {member.display_name}")
+                                await channel.send("The log room channel set up for this server is not accessible.\nTo fix the log room use command `logroom`")
+                        else:
                             channel = guild.public_updates_channel
                             await channel.send(f"Unmuted : {member.display_name}")
-                            await channel.send("The log room channel set up for this server is not accessible.\nTo fix the log room use command `logroom`")
-                    else:
-                        channel = guild.public_updates_channel
-                        await channel.send(f"Unmuted : {member.display_name}")
-                        await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
-
+                            await channel.send("No log room is setup for this server. To setup a log room use command `logroom`\nThe current channel can be used as the log room.")
+                    except:
+                        pass
                 await self.bot.mutes.delete(member.id)
                 try:
                     self.bot.muted_users.pop(member.id)

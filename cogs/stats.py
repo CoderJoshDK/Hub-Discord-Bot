@@ -4,7 +4,7 @@ import random
 import discord
 from discord.ext import commands
 from discord.utils import get
-from emoji import EMOJI_ALIAS_UNICODE as EMOJIS
+from emoji import EMOJI_ALIAS_UNICODE_ENGLISH as EMOJIS
 
 import re
 from utils.util import GetMessage, dm_user, sendLog, sendAdmin   # pylint: disable=import-error
