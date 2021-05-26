@@ -90,26 +90,74 @@ class Config(commands.Cog):
         """
         channel = channel or ctx.channel
         allChannels = ctx.guild.channels
+        
         # Error checking
         if channel not in allChannels:
             await ctx.send("Invalid channel entered. Try using the channel's id\nThe room will be used to send sensative information so make sure only admins can access it")
             return
 
+        # Make sure the bot can manage the channel
+        perms = channel.permissions_for(ctx.guild.me)
+        if(perms.manage_permissions):
+            # No one should be able to interact with the room and only admin overides that
+            # If the guild has the channel perms set it might overide this
+            await channel.set_permissions(
+                ctx.guild.default_role,
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+                view_channel=False,
+                manage_messages=False,
+                reason="Setting up the report room's perms"
+            )
+        else:
+            await ctx.send("I do not have `manage permissions`. While not needed, it is suggested to give me permission to edit that channel's permissions.")
+
         await self.bot.config.upsert({"_id": ctx.guild.id, "admin_channel_id": channel.id})
-
-        # No one should be able to interact with the server and only admin overides that
-        # If the guild has the channel perms set it might overide this
-        await channel.set_permissions(
-            ctx.guild.default_role,
-            read_messages=False,
-            send_messages=False,
-            read_message_history=False,
-            view_channel=False,
-            manage_messages=False,
-            reason="Setting up the admin room's perms"
-        )
-
         await channel.send("The admin room has been setup", delete_after=30)
+
+    @commands.command(
+        name="reportroom",
+        aliases=["reportr"],
+        description="Set the servers report room where reports will be sent",
+        usage="[channel=current]"
+    )
+    @commands.guild_only()
+    @commands.has_guild_permissions(administrator=True)
+    async def reportroom(self, ctx, channel: discord.channel = None):
+        """
+        Set the servers report room in the config files
+        Params:
+         - ctx : commands context
+         - channel (discord.channel) : the channel that will be put into the docs
+        """
+        channel = channel or ctx.channel
+        allChannels = ctx.guild.channels
+        # Error checking
+        if channel not in allChannels:
+            await ctx.send("Invalid channel entered. Try sending the channel's id")
+            return
+
+        # Make sure the bot can manage the channel
+        perms = channel.permissions_for(ctx.guild.me)
+        if(perms.manage_permissions):
+            # No one should be able to interact with the room and only admin overides that
+            # If the guild has the channel perms set it might overide this
+            await channel.set_permissions(
+                ctx.guild.default_role,
+                read_messages=False,
+                send_messages=False,
+                read_message_history=False,
+                view_channel=False,
+                manage_messages=False,
+                reason="Setting up the report room's perms"
+            )
+        else:
+            await ctx.send("I do not have `manage permissions`. While not needed, it is suggested to give me permission to edit that channel's permissions.")
+
+        # Setup and let users know
+        await self.bot.config.upsert({"_id": ctx.guild.id, "reportroom_channel_id": channel.id})
+        await channel.send("The report room has been setup", delete_after=30)
 
 
 

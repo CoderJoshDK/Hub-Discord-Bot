@@ -1,4 +1,0 @@
-Joshie#2153 cleared 2 messages of bot-testing in Bot Stuff
-
-2021-05-25 01:52:43.763000 - Joshie: !clear 2
-2021-05-25 01:46:58.007000 - Jarvis: 

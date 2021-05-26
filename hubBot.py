@@ -146,7 +146,7 @@ async def eval(ctx, *, code):
     """
     # Clean up a code block
     code = clean_code(code)
-    await ctx.message.delete()
+    #await ctx.message.delete()
 
     # Variables to be passed through so the code that is ran
     # Is able to access these variables as their scope

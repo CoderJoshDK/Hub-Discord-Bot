@@ -8,20 +8,6 @@ class Games(commands.Cog):
     ### On start of code ###
     def __init__(self, bot):
         self.bot = bot
-        if len(bot.guilds) > 0:
-            self.startup()
-    
-    
-    def startup(self):
-        self.guild = self.bot.guilds[0]
-        self.red = 0x992d22
-        self.purple = 0x9b59b6
-
-    
-    ### Set up ###
-    @commands.Cog.listener()
-    async def on_ready(self):
-        self.startup()
 
 
     ### Shows the member their randomly sized penis ###
@@ -67,7 +53,7 @@ class Games(commands.Cog):
         embed = discord.Embed(
             title="Dice", 
             description=f"You rolled a {number}", 
-            color=self.purple
+            color=self.bot.colors["PURPLE"]
         )
 
         embed.set_author(
@@ -86,7 +72,7 @@ class Games(commands.Cog):
         embed = discord.Embed(
             title="Coin",
             description="Heads" if flip else "Tails",
-            color=self.purple
+            color=self.bot.colors["PURPLE"]
         )
 
         embed.set_author(

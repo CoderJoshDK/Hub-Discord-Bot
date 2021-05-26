@@ -1,7 +1,7 @@
-from utils.util import dm_user, sendAdmin, sendLog
 import discord, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
+from utils.util import sendAdmin, sendLog, sendToImportantChannel, getChannels, dm_user
 
 import os
 import traceback
@@ -289,16 +289,6 @@ class Mod(commands.Cog):
         await sendAdmin(self, ctx, file=discord.File(filename)) # Post the delete log
     @clear.error
     async def clear_error(self, ctx, error):
-        embed = discord.Embed(
-            color=0xe74c3c, 
-            title="Clear Error",
-            description=f"To use the clear command, type !clear [amount]\nThere was an error somewhere"
-            ) 
-        embed.set_author(
-            name=self.bot.user.name,
-            icon_url=self.bot.user.avatar_url
-        )
-        await ctx.send(embed=embed) # Post the embed
         embed = discord.Embed(
             color=0xe74c3c, 
             title="Clear Error",
