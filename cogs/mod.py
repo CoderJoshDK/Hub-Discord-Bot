@@ -1,7 +1,7 @@
 import discord, asyncio
 from discord.ext import commands, tasks
 from discord.utils import get
-from utils.util import sendAdmin, sendLog, sendToImportantChannel, getChannels, dm_user
+from utils.util import sendAdmin, sendLog, dm_user
 
 import os
 import traceback
